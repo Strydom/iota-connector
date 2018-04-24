@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: iota-node-watcher
+spec:
+  strategy:
+    type: RollingUpdate
+  replicas: 1
+  template:
+    metadata:
+      name: iota-node-watcher
+      labels:
+        app: iota-node-watcher
+        name: deployment
+    spec:
+      containers:
+      - name: iota-node-watcher-container
+        image: retrolatch/iota-node-watcher:latest
+        volumeMounts:
+        - name: iota-node-watcher-persistant-storage
+          mountPath: /app-data
+      volumes:
+      - name: iota-node-watcher-persistant-storage
+        hostPath:
+          path: /var/lib/docker/iota-node-watcher-storage/
