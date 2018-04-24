@@ -1,25 +1,37 @@
-apiVersion: extensions/v1beta1
+# Give permissions to system:serviceaccount:default:default to access kubectl
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: iota-cluster-role
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: default
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: iota-node-watcher
+  name: iota-connector-deployment
 spec:
+  selector:
+    matchLabels:
+      name: iota-connector-pod
   strategy:
     type: RollingUpdate
   replicas: 1
   template:
     metadata:
-      name: iota-node-watcher
+      name: iota-connector-pod
       labels:
-        app: iota-node-watcher
-        name: deployment
+        name: iota-connector-pod
     spec:
       containers:
-      - name: iota-node-watcher-container
-        image: retrolatch/iota-node-watcher:latest
-        volumeMounts:
-        - name: iota-node-watcher-persistant-storage
-          mountPath: /app-data
-      volumes:
-      - name: iota-node-watcher-persistant-storage
-        hostPath:
-          path: /var/lib/docker/iota-node-watcher-storage/
+      - name: iota-connector-container
+        image: retrolatch/iota-connector:latest
+        tty: true # needed to allow log flow
